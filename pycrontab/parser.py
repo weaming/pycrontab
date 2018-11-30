@@ -1,11 +1,12 @@
 from typing import Callable, List, Set
 from datetime import datetime, timedelta
 import time
-from .worker import ThreadWorker
+from .worker import ThreadWorker, ProcessWorker
 from .event import Event
 from .errors import *
 
-WORKER = ThreadWorker()
+thread_worker = ThreadWorker()
+process_worker = ProcessWorker()
 
 _ranges = [
     # (0, 59),  # seconds
@@ -67,15 +68,17 @@ def parse_cron(cron: str, must_contains_year=False) -> List[Set]:
 
 
 class Job:
-    def __init__(self, name, fn: Callable, cron: str, caller: Callable=WORKER.add_background_task):
+    def __init__(self, name, cron: str, fn: Callable, args=(), kwargs=None, caller: Callable = None):
         self.name = name
         self.fn = fn
+        self.fn_args = args or ()
+        self.fn_kwargs = kwargs or {}
         self.cron = cron
-        self.caller = caller
+        self.caller = caller or process_worker.add_func_task
 
     def start(self):
         """start without waiting"""
-        self.caller(self.fn)
+        self.caller(self.fn, *self.fn_args, **self.fn_kwargs)
 
     def __repr__(self):
         return f"<task(name={self.name}, fn={self.fn}, cron='{self.cron}')>"
@@ -86,12 +89,9 @@ class CronTab:
         # {<name>: <event>}
         self.crontab = {}
 
-    def add_task(self, name: str, cron: str, fn: Callable, caller=None):
+    def add_task(self, name: str, cron: str, fn: Callable, args=(), kwargs=None, caller=None):
         cron_args = parse_cron(cron)
-        if caller:
-            job = Job(name, fn, cron=cron, caller=caller)
-        else:
-            job = Job(name, fn, cron=cron)
+        job = Job(name, cron, fn, args=args, kwargs=kwargs, caller=caller)
         event = Event(job.start, *cron_args)
         event.job = job
 

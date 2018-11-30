@@ -1,16 +1,25 @@
-from cbss_cron.cron import CronTab
+import logging
+from pycrontab import CronTab
 
 
-def get_fn(a):
-    def f():
-        print(a)
-
-    return f
+def fn(a):
+    print(a)
 
 
-center = CronTab()
-center.add_task('a', '1 1 2 3 *', get_fn('hello'))
-center.add_task('b', '1 2 3 4 5', get_fn('world'))
-center.add_task('c', '* * * * *', get_fn('all'))
-print(list(center))
-center.run()
+def test():
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='{asctime} {levelname} {name}({processName}|{threadName})>{filename}:{funcName}()#{lineno} : {message}',
+        style='{',
+    )
+
+    center = CronTab()
+    center.add_task('a', '1 1 2 3 *', fn, args=('hello',))
+    center.add_task('b', '1 2 3 4 5', fn, args=('world',))
+    center.add_task('c', '* * * * *', fn, args=('all',))
+    print(list(center))
+    center.run()
+
+
+if __name__ == '__main__':
+    test()

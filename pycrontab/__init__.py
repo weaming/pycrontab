@@ -12,4 +12,4 @@ from .parser import CronTab
 from .errors import *
 from .config import parse_configs_and_run
 
-version = "0.1.1"
+version = "0.1.2"

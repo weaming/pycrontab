@@ -3,12 +3,15 @@ import subprocess
 import queue
 import threading
 import datetime
+from multiprocessing import Pool
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 from .log import logger
 
 
-def run_command(command, stderr=None, redirect_stderr=False, cwd=None, environment: dict = None):
+def run_command(
+    command, stderr=None, redirect_stderr=False, cwd=None, environment: dict = None
+):
     assert isinstance(command, list), "command must be a list of string"
     if stderr is None:
         if redirect_stderr:
@@ -42,14 +45,18 @@ def run_command(command, stderr=None, redirect_stderr=False, cwd=None, environme
 
 
 def thread_spawn(target, name: str, daemon=True, args=(), kwargs=None):
-    thread = threading.Thread(target=target, name=name, daemon=daemon, args=args, kwargs=kwargs)
+    thread = threading.Thread(
+        target=target, name=name, daemon=daemon, args=args, kwargs=kwargs
+    )
     thread.start()
     return thread
 
 
 def run_in_thread(func, name=None):
     """run function in thread"""
-    thread_spawn(func, name or "{} {}".format(func.__name__, str(datetime.datetime.now())))
+    thread_spawn(
+        func, name or "{} {}".format(func.__name__, str(datetime.datetime.now()))
+    )
 
 
 class ThreadWorker(object):
@@ -91,3 +98,29 @@ class ThreadWorker(object):
 
         self._q.put(new_func)
         logger.debug(f"added task {func} {args} {kwargs}")
+
+
+class ProcessWorker:
+    def __init__(self, size=None):
+        self.pool_size = size
+        self.pool = None
+
+    def callback(self, rv):
+        logger.info(rv)
+
+    def error_callback(self, err):
+        logger.info(err)
+
+    def ensure_inited(self):
+        if not self.pool:
+            self.pool = Pool(self.pool_size)
+
+    def add_func_task(self, func, *args, **kwargs):
+        self.ensure_inited()
+        self.pool.apply_async(
+            func,
+            args=args,
+            kwds=kwargs,
+            callback=self.callback,
+            error_callback=self.error_callback,
+        )

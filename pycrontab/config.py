@@ -17,7 +17,7 @@ def prepare_dir(path):
 
 
 def write_log(path, line):
-    if not line.strip():
+    if not line or not line.strip():
         return
     prepare_dir(path)
     with open(path, "w") as f:
@@ -68,20 +68,25 @@ def parse_configs_and_run(path):
         cfg["stderr_logfile"] = expand_user_vars(cfg.get("stderr_logfile"))
 
         try:
-            fn = partial(
-                run_command_and_write_log,
-                [cfg["command"]] + cfg["arguments"],
+            cmd = [cfg["command"]] + cfg["arguments"]
+            kwargs = dict(
                 stdout_path=cfg["stdout_logfile"],
                 stderr_path=cfg["stderr_logfile"],
                 redirect_stderr=cfg.get("redirect_stderr"),
                 cwd=cfg["directory"],
                 env=cfg.get("environment"),
             )
+
+            event = tab.add_task(
+                cfg["name"],
+                cfg["cron"],
+                run_command_and_write_log,
+                args=(cmd,),
+                kwargs=kwargs,
+            )
         except KeyError as key:
             logger.error(f"{key} is a required config")
             sys.exit(1)
-
-        event = tab.add_task(cfg["name"], cfg["cron"], fn)
         logger.info(f"added job {event.job}")
 
     tab.run()

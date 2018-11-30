@@ -17,7 +17,11 @@ def main():
     )
     args = parser.parse_args()
 
-    logging.basicConfig(level=getattr(logging, args.log_level))
+    logging.basicConfig(
+        level=getattr(logging, args.log_level),
+        format="{asctime} {levelname} {name}({processName}|{threadName})>{filename}:{funcName}()#{lineno} : {message}",
+        style="{",
+    )
     parse_configs_and_run(args.config)
 
 

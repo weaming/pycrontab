@@ -1,0 +1,19 @@
+- name: ls home
+  command: ls
+  arguments:
+      - .
+  directory: $HOME
+  environment:
+    a: b
+    c: d
+  redirect_stderr: true
+  stdout_logfile: ./log/test.err
+  stderr_logfile: ./log/test.err
+  cron: "@minutely"
+- name: shell
+  command: sh
+  arguments:
+    - "-c"
+    - pwd && ls
+  directory: /var
+  cron: "@minutely"

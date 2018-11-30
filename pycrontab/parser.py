@@ -57,7 +57,7 @@ def parse_cron(cron: str, must_contains_year=False) -> List[Set]:
             if c == '*':
                 v = range_to_set(_ranges[which])
             elif c.startswith('*/'):
-                v = range_to_set(_ranges[which], step=int(c[1:]))
+                v = range_to_set(_ranges[which], step=int(c[2:]))
             else:
                 v = [int(c)]
 

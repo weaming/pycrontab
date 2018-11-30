@@ -61,16 +61,20 @@ def parse_configs_and_run(path):
 
     tab = CronTab()
     for cfg in configs:
+        cfg["command"] = expand_user_vars(cfg["command"])
+        cfg["directory"] = expand_user_vars(cfg["directory"])
+        cfg["arguments"] = [expand_user_vars(x) for x in cfg.get("arguments", [])]
+        cfg["stdout_logfile"] = expand_user_vars(cfg.get("stdout_logfile"))
+        cfg["stderr_logfile"] = expand_user_vars(cfg.get("stderr_logfile"))
+
         try:
-            args = [cfg["command"]] + cfg.get("arguments", [])
-            args = [expand_user_vars(x) for x in args]
             fn = partial(
                 run_command_and_write_log,
-                args,
-                stdout_path=expand_user_vars(cfg.get("stdout_logfile")),
-                stderr_path=expand_user_vars(cfg.get("stderr_logfile")),
+                [cfg["command"]] + cfg["arguments"],
+                stdout_path=cfg["stdout_logfile"],
+                stderr_path=cfg["stderr_logfile"],
                 redirect_stderr=cfg.get("redirect_stderr"),
-                cwd=expand_user_vars(cfg["directory"]),
+                cwd=cfg["directory"],
                 env=cfg.get("environment"),
             )
         except KeyError as key:

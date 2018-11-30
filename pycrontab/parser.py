@@ -67,14 +67,15 @@ def parse_cron(cron: str, must_contains_year=False) -> List[Set]:
 
 
 class Job:
-    def __init__(self, name, fn: Callable, cron: str):
+    def __init__(self, name, fn: Callable, cron: str, caller: Callable=WORKER.add_background_task):
         self.name = name
         self.fn = fn
         self.cron = cron
+        self.caller = caller
 
     def start(self):
         """start without waiting"""
-        WORKER.add_background_task(self.fn)
+        self.caller(self.fn)
 
     def __repr__(self):
         return f"<task(name={self.name}, fn={self.fn}, cron='{self.cron}')>"
@@ -85,9 +86,12 @@ class CronTab:
         # {<name>: <event>}
         self.crontab = {}
 
-    def add_task(self, name: str, cron: str, fn: Callable):
+    def add_task(self, name: str, cron: str, fn: Callable, caller=None):
         cron_args = parse_cron(cron)
-        job = Job(name, fn, cron=cron)
+        if caller:
+            job = Job(name, fn, cron=cron, caller=caller)
+        else:
+            job = Job(name, fn, cron=cron)
         event = Event(job.start, *cron_args)
         event.job = job
 

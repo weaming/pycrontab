@@ -19,10 +19,16 @@ def convert_to_set(obj):
 
 class Event(object):
     def __init__(
-            self, action, min=allMatch, hour=allMatch,
-            day=allMatch, month=allMatch,
-            dow=allMatch, year=allMatch,
-            args=(), kwargs=None,
+        self,
+        action,
+        min=allMatch,
+        hour=allMatch,
+        day=allMatch,
+        month=allMatch,
+        dow=allMatch,
+        year=allMatch,
+        args=(),
+        kwargs=None,
     ):
         self.mins = convert_to_set(min)
         self.hours = convert_to_set(hour)
@@ -33,7 +39,7 @@ class Event(object):
 
         # action of time event
         self.action = action
-        self.args = args
+        self.args = args or ()
         self.kwargs = kwargs or {}
 
         # the action will be a method of job, added here for reference
@@ -41,12 +47,14 @@ class Event(object):
 
     def match_time(self, t):
         """Return True if this event should trigger at the specified datetime"""
-        return ((t.minute in self.mins) and
-                (t.hour in self.hours) and
-                (t.day in self.days) and
-                (t.month in self.months) and
-                (t.weekday() in self.dow) and
-                (t.year in self.years))
+        return (
+            (t.minute in self.mins)
+            and (t.hour in self.hours)
+            and (t.day in self.days)
+            and (t.month in self.months)
+            and (t.weekday() in self.dow)
+            and (t.year in self.years)
+        )
 
     def check(self, t):
         if self.match_time(t):

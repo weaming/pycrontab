@@ -1,4 +1,3 @@
-import logging
 import subprocess
 import queue
 import threading
@@ -10,7 +9,11 @@ from .log import logger
 
 
 def run_command(
-    command, stderr=None, redirect_stderr=False, cwd=None, environment: dict = None
+    command,
+    stderr=None,
+    redirect_stderr=False,
+    cwd=None,
+    environment: dict = None
 ):
     assert isinstance(command, list), "command must be a list of string"
     if stderr is None:
@@ -55,7 +58,8 @@ def thread_spawn(target, name: str, daemon=True, args=(), kwargs=None):
 def run_in_thread(func, name=None):
     """run function in thread"""
     thread_spawn(
-        func, name or "{} {}".format(func.__name__, str(datetime.datetime.now()))
+        func, name or
+        "{} {}".format(func.__name__, str(datetime.datetime.now()))
     )
 
 
@@ -87,7 +91,9 @@ class ThreadWorker(object):
     def ensure_started(self):
         if self.thread is None:
             self.executor = ThreadPoolExecutor(max_workers=self.pool_size)
-            self.thread = thread_spawn(self.poll_tasks, name="background_tasks_poll")
+            self.thread = thread_spawn(
+                self.poll_tasks, name="background_tasks_poll"
+            )
 
     def add_background_task(self, func, *args, **kwargs):
         self.ensure_started()

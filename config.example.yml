@@ -7,7 +7,7 @@
     a: b
     c: d
   redirect_stderr: true
-  stdout_logfile: ./log/test.err
+  stdout_logfile: ./log/test.out
   stderr_logfile: ./log/test.err
   cron: "@minutely"
 - name: shell

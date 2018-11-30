@@ -1,6 +1,5 @@
 import os
 import sys
-from functools import partial
 
 from data_process.io_yaml import read_yaml
 from . import CronTab

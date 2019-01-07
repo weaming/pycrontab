@@ -68,7 +68,15 @@ def parse_cron(cron: str, must_contains_year=False) -> List[Set]:
 
 
 class Job:
-    def __init__(self, name, cron: str, fn: Callable, args=(), kwargs=None, caller: Callable = None):
+    def __init__(
+        self,
+        name,
+        cron: str,
+        fn: Callable,
+        args=(),
+        kwargs=None,
+        caller: Callable = None
+    ):
         self.name = name
         self.fn = fn
         self.fn_args = args or ()
@@ -89,7 +97,15 @@ class CronTab:
         # {<name>: <event>}
         self.crontab = {}
 
-    def add_task(self, name: str, cron: str, fn: Callable, args=(), kwargs=None, caller=None):
+    def add_task(
+        self,
+        name: str,
+        cron: str,
+        fn: Callable,
+        args=(),
+        kwargs=None,
+        caller=None
+    ):
         cron_args = parse_cron(cron)
         job = Job(name, cron, fn, args=args, kwargs=kwargs, caller=caller)
         event = Event(job.start, *cron_args)
@@ -109,7 +125,7 @@ class CronTab:
             # have one minutes to fire the checks, or may be later for firing actions on next minute
             t += timedelta(minutes=1)
             while datetime.now() < t:
-                time.sleep((t - datetime.now()).seconds)
+                time.sleep((t - datetime.now()).seconds / 2)
 
     def __iter__(self):
         for event in self.crontab.values():
